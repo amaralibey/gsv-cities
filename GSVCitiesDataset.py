@@ -1,13 +1,8 @@
 import pandas as pd
 from PIL import Image
-import matplotlib.pyplot as plt
-import numpy as np
-
-import math
 import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as T
-import torchvision.utils as utils
 
 
 default_transform = T.Compose([
