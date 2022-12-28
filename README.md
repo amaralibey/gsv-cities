@@ -28,7 +28,7 @@ What can we do with GSV-Cities dataset?
 
 #### **Database organisation**
 
-Contrary to existing visual place recognition datasets, where images are organised in a way that's not (so humanely) explorable. Images in GSV-Cities are names as follows:
+Contrary to existing visual place recognition datasets, where images are organised in a way that's not (so humanly) explorable. Images in GSV-Cities are names as follows:
 
 `city_place-id_year_month_bearing_latitude_longitude_panoid.JPG`
 
