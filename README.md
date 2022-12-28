@@ -80,3 +80,5 @@ df = df[df.groupby('place_id')['place_id'].transform('size') >= 8]
 Notice that given a Dataframe row, we can directly read its corresponding image (the first row of the above example corresponds to the image named `./Images/London/London_0000130_2018_04_015_51.4861_-0.0895151_6jFjb3wGyCkcBfq4k559ag.JPG`)
 
 We can, for example, query the dataset with *only places that are in the northern hemisphere, taken between 2012 and 2016 during the month of July, each depicted by at least 16 images*.
+
+...to be continued
