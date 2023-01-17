@@ -2,35 +2,37 @@
 
 Official repo for Neurocomputing 2022 paper: **GSV-Cities: Toward Appropriate Supervised Visual Place Recognition**
 
+DOWNLOAD: please fill the following form [LINK](https://forms.office.com/r/nwgiKLQFiu)
+
 ---
 
 **Summary:**
 
-We collect a large-scale dataset for visual place recognition, with highly accurate ground truth. We call it **GSV-Cities** (GSV refers to Google Street View). We also propose, a fully convolutional aggregation technique (called **Conv-AP**) that outperforms NetVLAD and most existing SotA techniques. We consider representation learning for place recognition as a three components pipeline as follows.
+We collect a large-scale dataset for visual place recognition, with highly accurate ground truth. We call it **GSV-Cities** (GSV refers to Google Street View). We also propose a fully convolutional aggregation technique (called **Conv-AP**) that outperforms NetVLAD and most existing SotA techniques. We consider representation learning for place recognition as a three components pipeline as follows.
 
 ![1672170020629](image/README/1672170020629.png)
 
 What can we do with GSV-Cities dataset?
 
-* Train visual place recognition models extremely rapidly
+* Train visual place recognition models extremely rapidly.
 * No offline triplet mining: GSV-Cities contains highly accurate ground truth. Batches are formed in a traightforward way, bypassing all the hassle of triplet preprocessing.
-* Rapid prototyping: no need to wait days for convergence. Using GSV-Cities, the network will show convergence after one or two epochs (expect ~20 minutes of training per epoch when using half precision).
-* All existing techniques benefits from training on GSV-Cities.
+* Rapid prototyping: no need to wait days for convergence. Using GSV-Cities, the network will show convergence after two or three epochs (expect ~20 minutes of training per epoch).
+* All existing techniques benefit from training on GSV-Cities.
 
 ---
 
 ## GSV-Cities dataset overview
 
-* GSV-Cities contains ~500,000 images representing ~67,000 different places, all spread across multiple cities around the globe.
+* GSV-Cities contains ~500,000 images representing ~67,000 different places, spread across multiple cities around the globe.
 * All places are physically distant (at least 100 meters between any pair of places).
 
 ![1672162442594](image/README/1672162442594.png)
 
 #### **Database organisation**
 
-Unlike existing visual place recognition datasets, where images are organised in a way that's not (so humanly) explorable. Images in GSV-Cities are named as follows:
+Unlike existing visual place recognition datasets where images are organised in a way that's not (so humanly) explorable. Images in GSV-Cities are named as follows:
 
-`city_place-id_year_month_bearing_latitude_longitude_panoid.JPG`
+`city_placeID_year_month_bearing_latitude_longitude_panoid.JPG`
 
 This way of naming has the advantage of exploring the dataset using the default Image Viewer of the OS, and also, adding redondancy of the metadata in case the Dataframes get lost or corrupt.
 
@@ -60,7 +62,7 @@ The dataset is organised as follows:
 
 ```
 
-Each datadrame contains the metadata of the its corresponding city. This will help query the dataset almost instantly using Pandas. For example, we show 5 rows from London.csv:
+Each datadrame contains the metadata of the its corresponding city. This will help access the dataset almost instantly using Pandas. For example, we show 5 rows from London.csv:
 
 | place_id | year | month | northdeg | city_id |     lat |        lon | panoid                 |
 | -------: | ---: | ----: | -------: | :------ | ------: | ---------: | :--------------------- |
@@ -82,3 +84,19 @@ Notice that given a Dataframe row, we can directly read its corresponding image 
 We can, for example, query the dataset with *only places that are in the northern hemisphere, taken between 2012 and 2016 during the month of July, each depicted by at least 16 images*.
 
 ...to be continued
+
+# Cite
+
+Use the following bibtex code
+
+```
+@article{ali2022gsv,
+  title={GSV-Cities: Toward appropriate supervised visual place recognition},
+  author={Ali-bey, Amar and Chaib-draa, Brahim and Gigu{\`e}re, Philippe},
+  journal={Neurocomputing},
+  volume={513},
+  pages={194--203},
+  year={2022},
+  publisher={Elsevier}
+}
+```
