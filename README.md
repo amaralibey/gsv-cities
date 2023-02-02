@@ -10,10 +10,11 @@ DOWNLOAD: please fill the following form [LINK](https://forms.office.com/r/nwgiK
 
 We collect a large-scale dataset for visual place recognition, with highly accurate ground truth. We call it **GSV-Cities** (GSV refers to Google Street View). We also propose a fully convolutional aggregation technique (called **Conv-AP**) that outperforms NetVLAD and most existing SotA techniques. We consider representation learning for place recognition as a three components pipeline as follows.
 
-![1672170020629](image/README/1672170020629.png)
+![Pipeline](image/README/1675363308261.png)
 
 What can we do with GSV-Cities dataset?
 
+* Obtain new state-of-the-art performance.
 * Train visual place recognition models extremely rapidly.
 * No offline triplet mining: GSV-Cities contains highly accurate ground truth. Batches are formed in a traightforward way, bypassing all the hassle of triplet preprocessing.
 * Rapid prototyping: no need to wait days for convergence. Using GSV-Cities, the network will show convergence after two or three epochs (expect ~20 minutes of training per epoch).
@@ -26,7 +27,7 @@ What can we do with GSV-Cities dataset?
 * GSV-Cities contains ~500,000 images representing ~67,000 different places, spread across multiple cities around the globe.
 * All places are physically distant (at least 100 meters between any pair of places).
 
-![1672162442594](image/README/1672162442594.png)
+![Sample cities](image/README/1675363330830.png)
 
 #### **Database organisation**
 
@@ -44,7 +45,7 @@ The dataset is organised as follows:
 │   │   ├── ...
 │   │   ├── PRS_0000003_2015_05_584_48.79733778544615_2.231461206488333_7P0FnGV3k4Fmtw66b8_-Gg.JPG
 │   │   ├── PRS_0000003_2018_05_406_48.79731397404108_2.231417994064803_R2vU9sk2livhkYbhy8SFfA.JPG
-│   │   ├── PRS_0000003_2019_07_411_48.79731121699659_2.231424930041198_bu4vOZzw3_iU5QxKiQciJA
+│   │   ├── PRS_0000003_2019_07_411_48.79731121699659_2.231424930041198_bu4vOZzw3_iU5QxKiQciJA.JPG
 │   │   ├── ...
 │   ├── Boston
 │   │   ├── ...
