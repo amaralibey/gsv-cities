@@ -4,6 +4,8 @@ Official repo for Neurocomputing 2022 paper: **GSV-Cities: Toward Appropriate Su
 
 DOWNLOAD: please fill the following form [LINK](https://forms.office.com/r/nwgiKLQFiu)
 
+Experiments can be run from `main.py`, the code is commented and should be clear. Feel free to open an Issue if you have any question.
+
 ---
 
 **Summary:**
