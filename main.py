@@ -222,17 +222,18 @@ class VPRModel(pl.LightningModule):
 if __name__ == '__main__':
     
     datamodule = GSVCitiesDataModule(
-        batch_size=60,
+        batch_size=100,
         img_per_place=4,
         min_img_per_place=4,
         shuffle_all=False, # shuffle all images or keep shuffling in-city only
         random_sample_from_each_place=True,
-        image_size=(256, 256),
+        image_size=(320, 320),
         num_workers=28,
         show_data_stats=True,
         val_set_names=['pitts30k_val', 'msls_val'], # pitts30k_val, pitts30k_test, msls_val
     )
     
+    # examples of backbones
     # resnet18, resnet50, resnet101, resnet152,
     # resnext50_32x4d, resnext50_32x4d_swsl , resnext101_32x4d_swsl, resnext101_32x8d_swsl
     # efficientnet_b0, efficientnet_b1, efficientnet_b2
@@ -245,9 +246,12 @@ if __name__ == '__main__':
         layers_to_crop=[], # 4 crops the last resnet layer, 3 crops the 3rd, ...etc
         
         #---- Aggregator
-        agg_arch='CosPlace',
-        agg_config={'in_dim': 2048,
-                    'out_dim': 512},
+        # agg_arch='CosPlace',
+        # agg_config={'in_dim': 2048,
+                    # 'out_dim': 512},
+        agg_arch='ConvAP',
+        agg_config={'in_channels': 2048,
+                    'out_channels': 512},
 
         #---- Train hyperparameters
         lr=0.03, # 0.004 for AdamW from scratch 0.05 weight decay
@@ -258,11 +262,11 @@ if __name__ == '__main__':
         milestones=[5, 10, 15],
         lr_mult=0.3,
         
-        #----- Loss
-        # ContrastiveLoss, TripletMarginLoss, MultiSimilarityLoss,
+        #----- Loss functions
+        # example: ContrastiveLoss, TripletMarginLoss, MultiSimilarityLoss,
         # FastAPLoss, CircleLoss, SupConLoss,
-        loss_name='MultiSimilarityLoss', # SupConLoss
-        miner_name='MultiSimilarityMiner', # TripletMarginMiner, MultiSimilarityMiner, PairMarginMiner
+        loss_name='MultiSimilarityLoss',
+        miner_name='MultiSimilarityMiner', # example: TripletMarginMiner, MultiSimilarityMiner, PairMarginMiner
         miner_margin=0.1,
         faiss_gpu=False
     )
@@ -293,9 +297,9 @@ if __name__ == '__main__':
         callbacks=[checkpoint_cb],# we only run the checkpointing callback (you can add more)
         reload_dataloaders_every_n_epochs=1, # we reload the dataset to shuffle the order
         log_every_n_steps=20,
-        # fast_dev_run=True # only run a mini train and validation loop (no checkpointing).
+        # fast_dev_run=True # uncomment if you only run a mini train and validation loop (no checkpointing).
     )
     
-    # we call the trained, we give it the model and the datamodule
+    # we call the trainer, we give it the model and the datamodule
     # now you see the modularity of Pytorch Lighning?
     trainer.fit(model=model, datamodule=datamodule)

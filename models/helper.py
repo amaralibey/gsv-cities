@@ -35,15 +35,18 @@ def get_backbone(backbone_arch='resnet50',
                               layers_to_freeze=layers_to_freeze)
 
 def get_aggregator(agg_arch='ConvAP', agg_config={}):
-    """Helper function that returns the aggregation layer given its name
+    """Helper function that returns the aggregation layer given its name.
+    If you happen to make your own aggregator, you might need to add a call
+    to this helper function.
 
     Args:
         agg_arch (str, optional): the name of the aggregator. Defaults to 'ConvAP'.
         agg_config (dict, optional): this must contain all the arguments needed to instantiate the aggregator class. Defaults to {}.
 
     Returns:
-        _type_: _description_
+        nn.Module: the aggregation layer
     """
+    
     if 'cosplace' in agg_arch.lower():
         assert 'in_dim' in agg_config
         assert 'out_dim' in agg_config
@@ -55,6 +58,10 @@ def get_aggregator(agg_arch='ConvAP', agg_config={}):
         else:
             assert 'p' in agg_config
         return aggregators.GeM(**agg_config)
+    
+    elif 'convap' in agg_arch.lower():
+        assert 'in_channels' in agg_config
+        return aggregators.ConvAP(**agg_config)
     
 def print_nb_params(m):
     """Prints the numbe of trainable parameters in the model
