@@ -57,7 +57,7 @@ def get_aggregator(agg_arch='ConvAP', agg_config={}):
             agg_config['p'] = 3
         else:
             assert 'p' in agg_config
-        return aggregators.GeM(**agg_config)
+        return aggregators.GeMPool(**agg_config)
     
     elif 'convap' in agg_arch.lower():
         assert 'in_channels' in agg_config

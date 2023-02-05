@@ -249,6 +249,9 @@ if __name__ == '__main__':
         # agg_arch='CosPlace',
         # agg_config={'in_dim': 2048,
                     # 'out_dim': 512},
+        # agg_arch='GeM',
+        # agg_config={'p': 3},
+        
         agg_arch='ConvAP',
         agg_config={'in_channels': 2048,
                     'out_channels': 512},
@@ -297,7 +300,7 @@ if __name__ == '__main__':
         callbacks=[checkpoint_cb],# we only run the checkpointing callback (you can add more)
         reload_dataloaders_every_n_epochs=1, # we reload the dataset to shuffle the order
         log_every_n_steps=20,
-        # fast_dev_run=True # uncomment if you only run a mini train and validation loop (no checkpointing).
+        fast_dev_run=True # uncomment if you only run a mini train and validation loop (no checkpointing).
     )
     
     # we call the trainer, we give it the model and the datamodule

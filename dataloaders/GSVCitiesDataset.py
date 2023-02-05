@@ -13,6 +13,7 @@ default_transform = T.Compose([
 ])
 
 # Hard coded path to dataset folder 
+
 BASE_PATH = '../datasets/gsv-cities/'
 
 class GSVCitiesDataset(Dataset):

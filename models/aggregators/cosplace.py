@@ -1,7 +1,17 @@
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
-from gem import GeM
+
+class GeM(nn.Module):
+    """Implementation of GeM as in https://github.com/filipradenovic/cnnimageretrieval-pytorch
+    """
+    def __init__(self, p=3, eps=1e-6):
+        super().__init__()
+        self.p = nn.Parameter(torch.ones(1)*p)
+        self.eps = eps
+
+    def forward(self, x):
+        return F.avg_pool2d(x.clamp(min=self.eps).pow(self.p), (x.size(-2), x.size(-1))).pow(1./self.p)
 
 class CosPlace(nn.Module):
     """
@@ -12,7 +22,7 @@ class CosPlace(nn.Module):
         out_dim: dimension of the output descriptor 
     """
     def __init__(self, in_dim, out_dim):
-        super(CosPlace, self).__init__()
+        super().__init__()
         self.gem = GeM()
         self.fc = nn.Linear(in_dim, out_dim)
 
