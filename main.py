@@ -222,13 +222,13 @@ class VPRModel(pl.LightningModule):
 if __name__ == '__main__':
     
     datamodule = GSVCitiesDataModule(
-        batch_size=100,
+        batch_size=60,
         img_per_place=4,
         min_img_per_place=4,
         shuffle_all=False, # shuffle all images or keep shuffling in-city only
         random_sample_from_each_place=True,
         image_size=(320, 320),
-        num_workers=28,
+        num_workers=4,
         show_data_stats=True,
         val_set_names=['pitts30k_val', 'msls_val'], # pitts30k_val, pitts30k_test, msls_val
     )
@@ -239,35 +239,44 @@ if __name__ == '__main__':
     # efficientnet_b0, efficientnet_b1, efficientnet_b2
     # swinv2_base_window12to16_192to256_22kft1k
     model = VPRModel(
-        #---- Encoder
-        backbone_arch='resnet50',
+        #-------------------------------
+        #---- Backbone architecture ----
+        backbone_arch='resnet18',
         pretrained=True,
         layers_to_freeze=2,
         layers_to_crop=[], # 4 crops the last resnet layer, 3 crops the 3rd, ...etc
         
-        #---- Aggregator
+        #---------------------
+        #---- Aggregator -----
         # agg_arch='CosPlace',
-        # agg_config={'in_dim': 2048,
-                    # 'out_dim': 512},
+        # agg_config={'in_dim': 512,
+        #             'out_dim': 512},
         # agg_arch='GeM',
         # agg_config={'p': 3},
         
         agg_arch='ConvAP',
         agg_config={'in_channels': 2048,
-                    'out_channels': 512},
+                    'out_channels': 2048,
+                    's1' : 2,
+                    's2' : 2},
 
-        #---- Train hyperparameters
-        lr=0.03, # 0.004 for AdamW from scratch 0.05 weight decay
-        optimizer='sgd', #adamw
+        #-----------------------------------
+        #---- Training hyperparameters -----
+        #
+        lr=0.03,
+        optimizer='sgd', # or adamw
         weight_decay=1e-3,
         momentum=0.9,
         warmpup_steps=800,
         milestones=[5, 10, 15],
         lr_mult=0.3,
         
-        #----- Loss functions
+        #---------------------------------
+        #---- Training loss function -----
+        # see utils.losses.py for more losses
         # example: ContrastiveLoss, TripletMarginLoss, MultiSimilarityLoss,
         # FastAPLoss, CircleLoss, SupConLoss,
+        #
         loss_name='MultiSimilarityLoss',
         miner_name='MultiSimilarityMiner', # example: TripletMarginMiner, MultiSimilarityMiner, PairMarginMiner
         miner_margin=0.1,
@@ -302,7 +311,7 @@ if __name__ == '__main__':
         log_every_n_steps=20,
         fast_dev_run=True # uncomment if you only run a mini train and validation loop (no checkpointing).
     )
-    
+
     # we call the trainer, we give it the model and the datamodule
     # now you see the modularity of Pytorch Lighning?
     trainer.fit(model=model, datamodule=datamodule)

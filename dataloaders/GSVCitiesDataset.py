@@ -1,20 +1,23 @@
 # https://github.com/amaralibey/gsv-cities
 
 import pandas as pd
+from pathlib import Path
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as T
-
 
 default_transform = T.Compose([
     T.ToTensor(),
     T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-# Hard coded path to dataset folder 
+# NOTE: Hard coded path to dataset folder 
+BASE_PATH = '../datasets/gsv_cities/'
 
-BASE_PATH = '../datasets/gsv-cities/'
+if not Path(BASE_PATH).exists():
+    raise FileNotFoundError(
+        'BASE_PATH is hardcoded, please adjust to point to gsv_cities')
 
 class GSVCitiesDataset(Dataset):
     def __init__(self,

@@ -1,8 +1,7 @@
-from torch.utils.data import Dataset
-
+from pathlib import Path
 import numpy as np
 from PIL import Image
-from pathlib import Path
+from torch.utils.data import Dataset
 
 # NOTE: you need to download the mapillary_sls dataset from  https://github.com/FrederikWarburg/mapillary_sls
 # make sure the path where the mapillary_sls validation dataset resides on your computer is correct.

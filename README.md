@@ -1,35 +1,41 @@
-# GSV-CITIES
+# GSV-Cities
 
-Official repo for Neurocomputing 2022 paper: **GSV-Cities: Toward Appropriate Supervised Visual Place Recognition**
+Official repo for *Neurocomputing 2022* paper **GSV-Cities: Toward Appropriate Supervised Visual Place Recognition**
 
-DATASET DOWNLOAD: please fill the following form [LINK](https://forms.office.com/r/nwgiKLQFiu)
+**UPDATE**: The dataset is now hosted on Kaggle: https://www.kaggle.com/datasets/amaralibey/gsv-cities
 
-Experiments can be run from `main.py`, the code is commented and should be clear. Feel free to open an Issue if you have any question.
+Experiments can be run from `main.py`, the code is commented and should be clear. Feel free to open an issue if you have any question.
 
 ---
 
 **Summary:**
 
-We collect a large-scale dataset for visual place recognition, with highly accurate ground truth. We call it **GSV-Cities** (GSV refers to Google Street View). We also propose a fully convolutional aggregation technique (called **Conv-AP**) that outperforms NetVLAD and most existing SotA techniques. We consider representation learning for place recognition as a three components pipeline as follows.
+1. We collected **GSV-Cities**, a large-scale dataset for the task of Visual Place Recognition, with highly accurate ground truth.
+   * It contains ~530k images.
+   * There are more than 62k different places, spread across multiple cities around the globe.
+   * Each place is depited by at least 4 images (up to 20 images).
+   * All places are physically distant (at least 100 meters between any pair of places).
+2. We also proposed a fully convolutional aggregation technique (called **Conv-AP**) that outperforms NetVLAD and most existing SotA techniques.
+3. We consider representation learning for visual place recognition as a three components pipeline as follows:
 
-![Pipeline](image/README/1675363308261.png)
+![1675713848595](image/README/1675713848595.png)
 
 What can we do with GSV-Cities dataset?
 
 * Obtain new state-of-the-art performance.
-* Train visual place recognition models extremely rapidly.
+* Train visual place recognition models *extremely* rapidly.
 * No offline triplet mining: GSV-Cities contains highly accurate ground truth. Batches are formed in a traightforward way, bypassing all the hassle of triplet preprocessing.
-* Rapid prototyping: no need to wait days for convergence. Using GSV-Cities, the network will show convergence after two or three epochs (expect ~20 minutes of training per epoch).
+* Rapid prototyping: no need to wait days for convergence. Using GSV-Cities, the network will show convergence after two or three epochs (expect 10-15 minutes of training per epoch).
 * All existing techniques benefit from training on GSV-Cities.
 
 ---
 
 ## GSV-Cities dataset overview
 
-* GSV-Cities contains ~500,000 images representing ~67,000 different places, spread across multiple cities around the globe.
+* GSV-Cities contains ~500,000 images representing ~62,000 different places, spread across multiple cities around the globe.
 * All places are physically distant (at least 100 meters between any pair of places).
 
-![Sample cities](image/README/1675363330830.png)
+![1675713882131](image/README/1675713882131.png)
 
 #### **Database organisation**
 
@@ -86,7 +92,7 @@ Notice that given a Dataframe row, we can directly read its corresponding image 
 
 We can, for example, query the dataset with *only places that are in the northern hemisphere, taken between 2012 and 2016 during the month of July, each depicted by at least 16 images*.
 
-...to be continued
+*Stay tuned for tutorials in the comming weeks.*
 
 # Cite
 
