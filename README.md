@@ -20,7 +20,7 @@ Experiments can be run from `main.py`, the code is commented and should be clear
 
 ![1675713848595](image/README/1675713848595.png)
 
-What can we do with GSV-Cities dataset?
+What can we do with GSV-Cities dataset and the code base in this repo?
 
 * Obtain new state-of-the-art performance.
 * Train visual place recognition models *extremely* rapidly.
