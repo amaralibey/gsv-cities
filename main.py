@@ -241,7 +241,7 @@ if __name__ == '__main__':
     model = VPRModel(
         #-------------------------------
         #---- Backbone architecture ----
-        backbone_arch='resnet18',
+        backbone_arch='resnet50',
         pretrained=True,
         layers_to_freeze=2,
         layers_to_crop=[], # 4 crops the last resnet layer, 3 crops the 3rd, ...etc
@@ -309,7 +309,7 @@ if __name__ == '__main__':
         callbacks=[checkpoint_cb],# we only run the checkpointing callback (you can add more)
         reload_dataloaders_every_n_epochs=1, # we reload the dataset to shuffle the order
         log_every_n_steps=20,
-        fast_dev_run=True # uncomment if you only run a mini train and validation loop (no checkpointing).
+        fast_dev_run=True # comment if you want to start training the network and saving checkpoints
     )
 
     # we call the trainer, we give it the model and the datamodule
