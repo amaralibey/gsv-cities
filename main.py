@@ -11,9 +11,6 @@ from models import helper
 class VPRModel(pl.LightningModule):
     """This is the main model for Visual Place Recognition
     we use Pytorch Lightning for modularity purposes.
-
-    Args:
-        pl (_type_): _description_
     """
 
     def __init__(self,
@@ -173,10 +170,15 @@ class VPRModel(pl.LightningModule):
         return descriptors.detach().cpu()
     
     def validation_epoch_end(self, val_step_outputs):
-        """this return descriptors in their order
+        """at the end of each validation epoch
+        descriptors are returned in their order
         depending on how the validation dataset is implemented 
-        for this project (MSLS val, Pittburg val), it is always references then queries
-        [R1, R2, ..., Rn, Q1, Q2, ...]
+        for this project (MSLS val, Pittburg val), it is always references then queries.
+        For example, if we have n references and m queries, we will get 
+        the descriptors for each val_dataset in a list as follows: 
+        [R1, R2, ..., Rn, Q1, Q2, ..., Qm]
+        we then split it to references=[R1, R2, ..., Rn] and queries=[Q1, Q2, ..., Qm]
+        to calculate recall@K using the ground truth provided.
         """
         dm = self.trainer.datamodule
         # The following line is a hack: if we have only one validation set, then
@@ -223,14 +225,19 @@ class VPRModel(pl.LightningModule):
             
 if __name__ == '__main__':
     
+    # the datamodule contains train and validation dataloaders,
+    # refer to ./dataloader/GSVCitiesDataloader.py for details
+    # if you want to train on specific cities, you can comment/uncomment
+    # cities from the list TRAIN_CITIES
     datamodule = GSVCitiesDataModule(
         batch_size=60,
         img_per_place=4,
         min_img_per_place=4,
+        # cities=['London', 'Boston', 'Melbourne'], # you can sppecify cities here or in GSVCitiesDataloader.py
         shuffle_all=False, # shuffle all images or keep shuffling in-city only
         random_sample_from_each_place=True,
         image_size=(320, 320),
-        num_workers=4,
+        num_workers=8,
         show_data_stats=True,
         val_set_names=['pitts30k_val', 'msls_val'], # pitts30k_val, pitts30k_test, msls_val
     )

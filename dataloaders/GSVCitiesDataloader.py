@@ -19,25 +19,25 @@ TRAIN_CITIES = [
     'BuenosAires',
     'LosAngeles',
     'MexicoCity',
-    'OSL',
+    'OSL', # refers to Oslo
     'Rome',
     'Barcelona',
     'Chicago',
     'Madrid',
     'Miami',
     'Phoenix',
-    'TRT',
+    'TRT', # refers to Toronto
     'Boston',
     'Lisbon',
     'Medellin',
     'Minneapolis',
-    'PRG',
+    'PRG', # refers to Prague
     'WashingtonDC',
     'Brussels',
     'London',
     'Melbourne',
     'Osaka',
-    'PRS',
+    'PRS', # refers to Paris
 ]
 
 
