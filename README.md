@@ -2,13 +2,13 @@
 
 Official repo for *Neurocomputing 2022* paper **GSV-Cities: Toward Appropriate Supervised Visual Place Recognition**
 
-**UPDATE**: The dataset is now hosted on Kaggle: https://www.kaggle.com/datasets/amaralibey/gsv-cities
+**UPDATE**: The dataset is now hosted on Kaggle: [https://www.kaggle.com/datasets/amaralibey/gsv-cities](https://www.kaggle.com/datasets/amaralibey/gsv-cities)
 
 Experiments can be run from `main.py`, the code is commented and should be clear. Feel free to open an issue if you have any question.
 
 ---
 
-**Summary:**
+### **Summary**
 
 1. We collected **GSV-Cities**, a large-scale dataset for the task of Visual Place Recognition, with highly accurate ground truth.
    * It contains ~530k images.
