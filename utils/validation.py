@@ -38,10 +38,10 @@ def get_validation_recalls(r_list, q_list, k_values, gt, print_results=True, fai
         d = {k:v for (k,v) in zip(k_values, correct_at_k)}
 
         if print_results:
-            print() # print a new line
+            print('\n') # print a new line
             table = PrettyTable()
             table.field_names = ['K']+[str(k) for k in k_values]
             table.add_row(['Recall@K']+ [f'{100*v:.2f}' for v in correct_at_k])
-            print(table.get_string(title=f"Performances on {dataset_name}"))
+            print(table.get_string(title=f"Performance on {dataset_name}"))
         
-        return d
+        return d, predictions

@@ -1,41 +1,129 @@
 # GSV-Cities
 
-Official repo for *Neurocomputing 2022* paper **GSV-Cities: Toward Appropriate Supervised Visual Place Recognition**
+Official repo for *Neurocomputing 2022* paper
+**GSV-Cities: Toward Appropriate Supervised Visual Place Recognition**
 
-**UPDATE**: The dataset is now hosted on Kaggle: [https://www.kaggle.com/datasets/amaralibey/gsv-cities](https://www.kaggle.com/datasets/amaralibey/gsv-cities)
+[[ArXiv](https://arxiv.org/abs/2210.10239)] [[ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0925231222012188)] [[Bibtex](https://github.com/amaralibey/gsv-cities#cite)] [[Dataset]([https://www.kaggle.com/datasets/amaralibey/gsv-cities](https://www.kaggle.com/datasets/amaralibey/gsv-cities))]
 
-Experiments can be run from `main.py`, the code is commented and should be clear. Feel free to open an issue if you have any question.
+* The dataset is hosted on [[Kaggle](https://www.kaggle.com/datasets/amaralibey/gsv-cities)].
+* Training can be run from `main.py`, the code is commented and should be clear. Feel free to open an issue if you have any question.
+* To evaluate trained models, we included a Jupyter Notebook: https://github.com/amaralibey/gsv-cities/tree/main/notebooks/evaluate_model.ipynb
 
 ---
 
-### **Summary**
+## **Summary of the paper**
 
 1. We collected **GSV-Cities**, a large-scale dataset for the task of Visual Place Recognition, with highly accurate ground truth.
    * It contains ~530k images.
    * There are more than 62k different places, spread across multiple cities around the globe.
    * Each place is depited by at least 4 images (up to 20 images).
    * All places are physically distant (at least 100 meters between any pair of places).
-2. We also proposed a fully convolutional aggregation technique (called **Conv-AP**) that outperforms NetVLAD and most existing SotA techniques.
+2. We proposed a fully convolutional aggregation technique (called **Conv-AP**) that outperforms NetVLAD and most existing SotA techniques.
 3. We consider representation learning for visual place recognition as a three components pipeline as follows:
 
-![1675713848595](image/README/1675713848595.png)
+![pipeline](image/README/1677603273600.png)
 
 What can we do with GSV-Cities dataset and the code base in this repo?
 
 * Obtain new state-of-the-art performance.
 * Train visual place recognition models *extremely* rapidly.
 * No offline triplet mining: GSV-Cities contains highly accurate ground truth. Batches are formed in a traightforward way, bypassing all the hassle of triplet preprocessing.
-* Rapid prototyping: no need to wait days for convergence. Using GSV-Cities, the network will show convergence after two or three epochs (expect 10-15 minutes of training per epoch).
-* All existing techniques benefit from training on GSV-Cities.
+* Rapid prototyping: no need to wait days for convergence (expect 10-15 minutes of per epoch).
+* All existing techniques can benefit from training on GSV-Cities.
+
+## Trained models
+
+Please refer to the following [Jupyter Notebook](https://github.com/amaralibey/gsv-cities/tree/main/notebooks/evaluate_model.ipynb) for evaluation.
+
+<table>
+<thead>
+  <tr>
+    <th rowspan="2">Backbone</th>
+    <th rowspan="2">Output<br>dimension</th>
+    <th colspan="2">Pitts250k-test</th>
+    <th colspan="2">Pitts30k-test</th>
+    <th colspan="2">MSLS-val</th>
+    <th colspan="2">Nordland</th>
+    <th rowspan="2"></th>
+  </tr>
+  <tr>
+    <th>R@1</th>
+    <th>R@5</th>
+    <th>R@1</th>
+    <th>R@5</th>
+    <th>R@1</th>
+    <th>R@5</th>
+    <th>R@1</th>
+    <th>R@5</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>ResNet50</td>
+    <td>4096<br>(1024x2x2)</td>
+    <td>92.5</td>
+    <td>97.7</td>
+    <td>90.5</td>
+    <td>95.3</td>
+    <td>83.5</td>
+    <td>89.7</td>
+    <td>42.6</td>
+    <td>59.8</td>
+    <td rowspan="2"><a href="https://drive.google.com/drive/folders/1VYPw9uGD11NgiGFgfWueLt3noJYOIuhL">LINK</a></td>
+  </tr>
+  <tr>
+    <td>ResNet50</td>
+    <td>8192<br>(2048x2x2)</td>
+    <td>92.8</td>
+    <td>97.7</td>
+    <td>90.5</td>
+    <td>95.2</td>
+    <td>83.1</td>
+    <td>90.3</td>
+    <td>42.7</td>
+    <td>58.8</td>
+  </tr>
+</tbody>
+</table>
+
+
+
+Code to load the pretrained weights is as follows:
+
+```python
+from main import VPRModel
+
+# Note that these models have been trained with images resized to 320x320
+# Also, either use BILINEAR or BICUBIC interpolation when resizing.
+# The model with 4096-dim output has been trained with images resized with bicubic interpolation
+# The model with 8192-dim output with bilinear interpolation
+# ConvAP works with all image sizes, but best performance can be achieved when resizing the training resolution
+
+model = VPRModel(backbone_arch='resnet50', 
+                 layers_to_crop=[],
+                 agg_arch='ConvAP',
+                 agg_config={'in_channels': 2048,
+                            'out_channels': 1024,
+                            's1' : 2,
+                            's2' : 2},
+                )
+
+
+state_dict = torch.load('./LOGS/resnet50_ConvAP_1024_2x2.ckpt')
+model.load_state_dict(state_dict)
+model.eval()
+
+```
+
 
 ---
 
 ## GSV-Cities dataset overview
 
-* GSV-Cities contains ~500,000 images representing ~62,000 different places, spread across multiple cities around the globe.
+* GSV-Cities contains ~530,000 images representing ~62,000 different places, spread across multiple cities around the globe.
 * All places are physically distant (at least 100 meters between any pair of places).
 
-![1675713882131](image/README/1675713882131.png)
+![example](image/README/1677601845733.png)
 
 #### **Database organisation**
 
@@ -96,7 +184,7 @@ We can, for example, query the dataset with *only places that are in the norther
 
 # Cite
 
-Use the following bibtex code
+Use the following bibtex code to cite our paper
 
 ```
 @article{ali2022gsv,

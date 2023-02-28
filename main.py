@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning.callbacks import Callback, ModelCheckpoint
-from torch.optim import lr_scheduler, optimizer
+from pytorch_lightning.callbacks import ModelCheckpoint
+from torch.optim import lr_scheduler
 import utils
 
 from dataloaders.GSVCitiesDataloader import GSVCitiesDataModule
@@ -188,56 +188,53 @@ class VPRModel(pl.LightningModule):
         
         for i, (val_set_name, val_dataset) in enumerate(zip(dm.val_set_names, dm.val_datasets)):
             feats = torch.concat(val_step_outputs[i], dim=0)
-            
             if 'pitts' in val_set_name:
-                # split to ref and queries
+                # split to ref and queries 
                 num_references = val_dataset.dbStruct.numDb
                 num_queries = len(val_dataset)-num_references
-                positives = val_dataset.getPositives()
-            elif 'msls' in val_set_name:
-                # split to ref and queries
-                num_references = val_dataset.num_references
-                num_queries = len(val_dataset)-num_references
-                positives = val_dataset.pIdx
+                ground_truth = val_dataset.getPositives()
             else:
-                print(f'Please implement validation_epoch_end for {val_set_name}')
-                raise NotImplemented
-
+                num_references = val_dataset.num_references
+                num_queries = val_dataset.num_queries
+                ground_truth = val_dataset.ground_truth
+            
+            # split to ref and queries    
             r_list = feats[ : num_references]
             q_list = feats[num_references : ]
-            # we calculate recall@K only when we are training (not in dev mode)
-            if len(q_list) == num_queries:
-                pitts_dict = utils.get_validation_recalls(r_list=r_list, 
-                                                    q_list=q_list,
-                                                    k_values=[1, 5, 10, 15, 20, 25],
-                                                    gt=positives,
-                                                    print_results=True,
-                                                    dataset_name=val_set_name,
-                                                    faiss_gpu=self.faiss_gpu
-                                                    )
-                del r_list, q_list, feats, num_references, positives
 
-                self.log(f'{val_set_name}/R1', pitts_dict[1], prog_bar=False, logger=True)
-                self.log(f'{val_set_name}/R5', pitts_dict[5], prog_bar=False, logger=True)
-                self.log(f'{val_set_name}/R10', pitts_dict[10], prog_bar=False, logger=True)
+            recalls_dict, predictions = utils.get_validation_recalls(r_list=r_list, 
+                                                q_list=q_list,
+                                                k_values=[1, 5, 10, 15, 20, 25],
+                                                gt=ground_truth,
+                                                print_results=True,
+                                                dataset_name=val_set_name,
+                                                faiss_gpu=self.faiss_gpu
+                                                )
+            del r_list, q_list, feats, num_references, ground_truth
+
+            self.log(f'{val_set_name}/R1', recalls_dict[1], prog_bar=False, logger=True)
+            self.log(f'{val_set_name}/R5', recalls_dict[5], prog_bar=False, logger=True)
+            self.log(f'{val_set_name}/R10', recalls_dict[10], prog_bar=False, logger=True)
         print('\n\n')
             
             
 if __name__ == '__main__':
+    
+    pl.utilities.seed.seed_everything(seed=1, workers=True)
     
     # the datamodule contains train and validation dataloaders,
     # refer to ./dataloader/GSVCitiesDataloader.py for details
     # if you want to train on specific cities, you can comment/uncomment
     # cities from the list TRAIN_CITIES
     datamodule = GSVCitiesDataModule(
-        batch_size=60,
+        batch_size=100,
         img_per_place=4,
         min_img_per_place=4,
         # cities=['London', 'Boston', 'Melbourne'], # you can sppecify cities here or in GSVCitiesDataloader.py
         shuffle_all=False, # shuffle all images or keep shuffling in-city only
         random_sample_from_each_place=True,
         image_size=(320, 320),
-        num_workers=8,
+        num_workers=16,
         show_data_stats=True,
         val_set_names=['pitts30k_val', 'msls_val'], # pitts30k_val, pitts30k_test, msls_val
     )
@@ -252,7 +249,7 @@ if __name__ == '__main__':
         #---- Backbone architecture ----
         backbone_arch='resnet50',
         pretrained=True,
-        layers_to_freeze=2,
+        layers_to_freeze=1,
         layers_to_crop=[], # 4 crops the last resnet layer, 3 crops the 3rd, ...etc
         
         #---------------------
@@ -265,7 +262,7 @@ if __name__ == '__main__':
         
         agg_arch='ConvAP',
         agg_config={'in_channels': 2048,
-                    'out_channels': 2048,
+                    'out_channels': 1024,
                     's1' : 2,
                     's2' : 2},
 
@@ -276,7 +273,7 @@ if __name__ == '__main__':
         optimizer='sgd', # or adamw
         weight_decay=1e-3,
         momentum=0.9,
-        warmpup_steps=800,
+        warmpup_steps=600,
         milestones=[5, 10, 15],
         lr_mult=0.3,
         
@@ -295,15 +292,14 @@ if __name__ == '__main__':
     # model params saving using Pytorch Lightning
     # we save the best 3 models accoring to Recall@1 on pittsburg val
     checkpoint_cb = ModelCheckpoint(
-        monitor='pitts30k_val/R1',
+        monitor='msls_val/R1',
         filename=f'{model.encoder_arch}' +
-        '_epoch({epoch:02d})_step({step:04d})_R1[{pitts30k_val/R1:.4f}]_R5[{pitts30k_val/R5:.4f}]',
+        '_epoch({epoch:02d})_step({step:04d})_R1[{msls_val/R1:.4f}]_R5[{msls_val/R5:.4f}]',
         auto_insert_metric_name=False,
         save_weights_only=True,
         save_top_k=3,
         mode='max',)
 
-    pl.utilities.seed.seed_everything(seed=42, workers=True)
     
     #------------------
     # we instanciate a trainer
@@ -311,16 +307,16 @@ if __name__ == '__main__':
         accelerator='gpu', devices=[0],
         default_root_dir=f'./LOGS/{model.encoder_arch}', # Tensorflow can be used to viz 
 
-        num_sanity_val_steps=0, # runs a validation step before stating training
-        precision=16, # we use half precision to reduce  memory usage
-        max_epochs=25,
+        num_sanity_val_steps=0, # runs N validation steps before stating training
+        precision=16, # we use half precision to reduce  memory usage (and 2x speed on RTX)
+        max_epochs=30,
         check_val_every_n_epoch=1, # run validation every epoch
-        callbacks=[checkpoint_cb],# we only run the checkpointing callback (you can add more)
+        callbacks=[checkpoint_cb],# we run the checkpointing callback (you can add more)
         reload_dataloaders_every_n_epochs=1, # we reload the dataset to shuffle the order
         log_every_n_steps=20,
-        fast_dev_run=True # comment if you want to start training the network and saving checkpoints
+        # fast_dev_run=True # comment if you want to start training the network and saving checkpoints
     )
 
-    # we call the trainer, we give it the model and the datamodule
+    # we call the trainer, and give it the model and the datamodule
     # now you see the modularity of Pytorch Lighning?
     trainer.fit(model=model, datamodule=datamodule)

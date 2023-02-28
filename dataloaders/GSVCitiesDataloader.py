@@ -2,9 +2,12 @@ import pytorch_lightning as pl
 from torch.utils.data.dataloader import DataLoader
 from torchvision import transforms as T
 
-from dataloaders.GSVCitiesDataset import GSVCitiesDataset
-from . import PittsburgDataset
-from . import MapillaryDataset
+from dataloaders.train.GSVCitiesDataset import GSVCitiesDataset
+from dataloaders.val import PittsburghDataset
+from dataloaders.val import MapillaryDataset
+from dataloaders.val import NordlandDataset
+from dataloaders.val import SPEDDataset
+
 
 from prettytable import PrettyTable
 
@@ -74,8 +77,7 @@ class GSVCitiesDataModule(pl.LightningDataModule):
 
         self.train_transform = T.Compose([
             T.Resize(image_size, interpolation=T.InterpolationMode.BILINEAR),
-            T.RandAugment(num_ops=2, interpolation=T.InterpolationMode.BILINEAR),
-            # T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2),
+            T.RandAugment(num_ops=3, interpolation=T.InterpolationMode.BILINEAR),
             T.ToTensor(),
             T.Normalize(mean=self.mean_dataset, std=self.std_dataset),
         ])
@@ -108,13 +110,19 @@ class GSVCitiesDataModule(pl.LightningDataModule):
             self.val_datasets = []
             for valid_set_name in self.val_set_names:
                 if valid_set_name.lower() == 'pitts30k_test':
-                    self.val_datasets.append(PittsburgDataset.get_whole_test_set(
+                    self.val_datasets.append(PittsburghDataset.get_whole_test_set(
                         input_transform=self.valid_transform))
                 elif valid_set_name.lower() == 'pitts30k_val':
-                    self.val_datasets.append(PittsburgDataset.get_whole_val_set(
+                    self.val_datasets.append(PittsburghDataset.get_whole_val_set(
                         input_transform=self.valid_transform))
                 elif valid_set_name.lower() == 'msls_val':
                     self.val_datasets.append(MapillaryDataset.MSLS(
+                        input_transform=self.valid_transform))
+                elif valid_set_name.lower() == 'nordland':
+                    self.val_datasets.append(NordlandDataset.NordlandDataset(
+                        input_transform=self.valid_transform))
+                elif valid_set_name.lower() == 'sped':
+                    self.val_datasets.append(SPEDDataset.SPEDDataset(
                         input_transform=self.valid_transform))
                 else:
                     print(
