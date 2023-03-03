@@ -3,11 +3,11 @@
 Official repo for *Neurocomputing 2022* paper
 **GSV-Cities: Toward Appropriate Supervised Visual Place Recognition**
 
-[[ArXiv](https://arxiv.org/abs/2210.10239)] [[ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0925231222012188)] [[Bibtex](https://github.com/amaralibey/gsv-cities#cite)] [[Dataset]([https://www.kaggle.com/datasets/amaralibey/gsv-cities](https://www.kaggle.com/datasets/amaralibey/gsv-cities))]
+[[ArXiv](https://arxiv.org/abs/2210.10239)] [[ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0925231222012188)] [[Bibtex](https://github.com/amaralibey/gsv-cities#cite)] [[Dataset](https://www.kaggle.com/datasets/amaralibey/gsv-cities)]
 
 * The dataset is hosted on [[Kaggle](https://www.kaggle.com/datasets/amaralibey/gsv-cities)].
 * Training can be run from `main.py`, the code is commented and should be clear. Feel free to open an issue if you have any question.
-* To evaluate trained models, we included a Jupyter Notebook: https://github.com/amaralibey/gsv-cities/tree/main/notebooks/evaluate_model.ipynb
+* To evaluate trained models, we rewrote the evaluation script for 8 benchmarks, check the included [Jupyter Notebook](https://github.com/amaralibey/gsv-cities/tree/main/notebooks/evaluate_model.ipynb)
 
 ---
 
@@ -35,6 +35,7 @@ What can we do with GSV-Cities dataset and the code base in this repo?
 
 Please refer to the following [Jupyter Notebook](https://github.com/amaralibey/gsv-cities/tree/main/notebooks/evaluate_model.ipynb) for evaluation.
 
+
 <table>
 <thead>
   <tr>
@@ -59,21 +60,8 @@ Please refer to the following [Jupyter Notebook](https://github.com/amaralibey/g
 </thead>
 <tbody>
   <tr>
-    <td>ResNet50</td>
-    <td>4096<br>(1024x2x2)</td>
-    <td>92.5</td>
-    <td>97.7</td>
-    <td>90.5</td>
-    <td>95.3</td>
-    <td>83.5</td>
-    <td>89.7</td>
-    <td>42.6</td>
-    <td>59.8</td>
-    <td rowspan="2"><a href="https://drive.google.com/drive/folders/1VYPw9uGD11NgiGFgfWueLt3noJYOIuhL">LINK</a></td>
-  </tr>
-  <tr>
-    <td>ResNet50</td>
-    <td>8192<br>(2048x2x2)</td>
+    <td rowspan="4">ResNet50</td>
+    <td>8192<br>[2048x2x2]</td>
     <td>92.8</td>
     <td>97.7</td>
     <td>90.5</td>
@@ -82,10 +70,43 @@ Please refer to the following [Jupyter Notebook](https://github.com/amaralibey/g
     <td>90.3</td>
     <td>42.7</td>
     <td>58.8</td>
+    <td rowspan="4"><a href="https://drive.google.com/drive/folders/1VYPw9uGD11NgiGFgfWueLt3noJYOIuhL">LINK</a></td>
+  </tr>
+  <tr>
+    <td>4096<br>[1024x2x2]</td>
+    <td>92.5</td>
+    <td>97.7</td>
+    <td>90.5</td>
+    <td>95.3</td>
+    <td>83.5</td>
+    <td>89.7</td>
+    <td>42.6</td>
+    <td>59.8</td>
+  </tr>
+  <tr>
+    <td>2048<br>[512x2x2]</td>
+    <td>92.3</td>
+    <td>97.5</td>
+    <td>90.6</td>
+    <td>95.1</td>
+    <td>83.4</td>
+    <td>90.3</td>
+    <td>40.3</td>
+    <td>56.6</td>
+  </tr>
+  <tr>
+    <td>512<br>[128x2x2]</td>
+    <td>90.7</td>
+    <td>96.6</td>
+    <td>89.1</td>
+    <td>94.6</td>
+    <td>82.6</td>
+    <td>90.0</td>
+    <td>36.3</td>
+    <td>53.1</td>
   </tr>
 </tbody>
 </table>
-
 
 
 Code to load the pretrained weights is as follows:
@@ -97,7 +118,7 @@ from main import VPRModel
 # Also, either use BILINEAR or BICUBIC interpolation when resizing.
 # The model with 4096-dim output has been trained with images resized with bicubic interpolation
 # The model with 8192-dim output with bilinear interpolation
-# ConvAP works with all image sizes, but best performance can be achieved when resizing the training resolution
+# ConvAP works with all image sizes, but best performance can be achieved when resizing to the training resolution
 
 model = VPRModel(backbone_arch='resnet50', 
                  layers_to_crop=[],
@@ -114,7 +135,6 @@ model.load_state_dict(state_dict)
 model.eval()
 
 ```
-
 
 ---
 

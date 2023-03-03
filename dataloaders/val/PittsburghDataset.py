@@ -1,112 +1,49 @@
-from os.path import join, exists
-from collections import namedtuple
-from scipy.io import loadmat
-
-import torchvision.transforms as T
-import torch.utils.data as data
-
-
+from pathlib import Path
+import numpy as np
 from PIL import Image
-from sklearn.neighbors import NearestNeighbors
+from torch.utils.data import Dataset
 
-root_dir = '/home/USER/work/datasets/Pittsburgh/' # directory where pittsburgh dataset is located
+# NOTE: you need to download the Nordland dataset from  https://surfdrive.surf.nl/files/index.php/s/sbZRXzYe3l0v67W
+# this link is shared and maintained by the authors of VPR_Bench: https://github.com/MubarizZaffar/VPR-Bench
+# the folders named ref and query should reside in DATASET_ROOT path
+# I hardcoded the image names and ground truth for faster evaluation
+# performance is exactly the same as if you use VPR-Bench.
 
-if not exists(root_dir):
-    raise FileNotFoundError(
-        'root_dir is hardcoded, please adjust to point to Pittsburgh dataset')
+DATASET_ROOT = '/home/USER/work/datasets/Pittsburgh/' 
+GT_ROOT = '/home/USER/work/gsv-cities/datasets/' # BECAREFUL, this is the ground truth that comes with GSV-Cities
 
-struct_dir = join(root_dir, 'datasets/')
-queries_dir = join(root_dir, 'queries_real')
+path_obj = Path(DATASET_ROOT)
+if not path_obj.exists():
+    raise Exception(f'Please make sure the path {DATASET_ROOT} to Nordland dataset is correct')
 
+if not path_obj.joinpath('ref') or not path_obj.joinpath('query'):
+    raise Exception(f'Please make sure the directories query and ref are situated in the directory {DATASET_ROOT}')
 
-def input_transform(image_size=None):
-    return T.Compose([
-        T.Resize(image_size),# interpolation=T.InterpolationMode.BICUBIC),
-        T.ToTensor(),
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-
-
-
-def get_whole_val_set(input_transform):
-    structFile = join(struct_dir, 'pitts30k_val.mat')
-    return WholeDatasetFromStruct(structFile, input_transform=input_transform)
-
-
-def get_250k_val_set(input_transform):
-    structFile = join(struct_dir, 'pitts250k_val.mat')
-    return WholeDatasetFromStruct(structFile, input_transform=input_transform)
-
-
-def get_whole_test_set(input_transform):
-    structFile = join(struct_dir, 'pitts30k_test.mat')
-    return WholeDatasetFromStruct(structFile, input_transform=input_transform)
-
-
-def get_250k_test_set(input_transform):
-    structFile = join(struct_dir, 'pitts250k_test.mat')
-    return WholeDatasetFromStruct(structFile, input_transform=input_transform)
-
-def get_whole_training_set(onlyDB=False):
-    structFile = join(struct_dir, 'pitts30k_train.mat')
-    return WholeDatasetFromStruct(structFile,
-                                  input_transform=input_transform(),
-                                  onlyDB=onlyDB)
-
-dbStruct = namedtuple('dbStruct', ['whichSet', 'dataset',
-                                   'dbImage', 'utmDb', 'qImage', 'utmQ', 'numDb', 'numQ',
-                                   'posDistThr', 'posDistSqThr', 'nonTrivPosDistSqThr'])
-
-
-def parse_dbStruct(path):
-    mat = loadmat(path)
-    matStruct = mat['dbStruct'].item()
-
-    if '250k' in path.split('/')[-1]:
-        dataset = 'pitts250k'
-    else:
-        dataset = 'pitts30k'
-
-    whichSet = matStruct[0].item()
-
-    dbImage = [f[0].item() for f in matStruct[1]]
-    utmDb = matStruct[2].T
-
-    qImage = [f[0].item() for f in matStruct[3]]
-    utmQ = matStruct[4].T
-
-    numDb = matStruct[5].item()
-    numQ = matStruct[6].item()
-
-    posDistThr = matStruct[7].item()
-    posDistSqThr = matStruct[8].item()
-    nonTrivPosDistSqThr = matStruct[9].item()
-
-    return dbStruct(whichSet, dataset, dbImage, utmDb, qImage,
-                    utmQ, numDb, numQ, posDistThr,
-                    posDistSqThr, nonTrivPosDistSqThr)
-
-
-class WholeDatasetFromStruct(data.Dataset):
-    def __init__(self, structFile, input_transform=None, onlyDB=False):
-        super().__init__()
-
+class PittsburghDataset(Dataset):
+    def __init__(self, which_ds='pitts30k_test', input_transform = None):
+        
+        assert which_ds.lower() in ['pitts30k_val', 'pitts30k_test', 'pitts250k_test']
+        
         self.input_transform = input_transform
 
-        self.dbStruct = parse_dbStruct(structFile)
-        self.images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
-        if not onlyDB:
-            self.images += [join(queries_dir, qIm)
-                            for qIm in self.dbStruct.qImage]
-
-        self.whichSet = self.dbStruct.whichSet
-        self.dataset = self.dbStruct.dataset
-
-        self.positives = None
-        self.distances = None
-
+        # reference images names
+        self.dbImages = np.load(GT_ROOT+f'Pittsburgh/{which_ds}_dbImages.npy')
+        
+        # query images names
+        self.qImages = np.load(GT_ROOT+f'Pittsburgh/{which_ds}_qImages.npy')
+        
+        # ground truth
+        self.ground_truth = np.load(GT_ROOT+f'Pittsburgh/{which_ds}_gt.npy', allow_pickle=True)
+        
+        # reference images then query images
+        self.images = np.concatenate((self.dbImages, self.qImages))
+        
+        self.num_references = len(self.dbImages)
+        self.num_queries = len(self.qImages)
+        
+    
     def __getitem__(self, index):
-        img = Image.open(self.images[index])
+        img = Image.open(DATASET_ROOT+self.images[index])
 
         if self.input_transform:
             img = self.input_transform(img)
@@ -115,15 +52,3 @@ class WholeDatasetFromStruct(data.Dataset):
 
     def __len__(self):
         return len(self.images)
-
-    def getPositives(self):
-        # positives for evaluation are those within trivial threshold range
-        # fit NN to find them, search by radius
-        if self.positives is None:
-            knn = NearestNeighbors(n_jobs=-1)
-            knn.fit(self.dbStruct.utmDb)
-
-            self.distances, self.positives = knn.radius_neighbors(self.dbStruct.utmQ,
-                                                                  radius=self.dbStruct.posDistThr)
-
-        return self.positives

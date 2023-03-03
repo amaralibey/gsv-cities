@@ -90,6 +90,10 @@ class VPRModel(pl.LightningModule):
             optimizer = torch.optim.AdamW(self.parameters(), 
                                         lr=self.lr, 
                                         weight_decay=self.weight_decay)
+        elif self.optimizer.lower() == 'adam':
+            optimizer = torch.optim.AdamW(self.parameters(), 
+                                        lr=self.lr, 
+                                        weight_decay=self.weight_decay)
         else:
             raise ValueError(f'Optimizer {self.optimizer} has not been added to "configure_optimizers()"')
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=self.milestones, gamma=self.lr_mult)
@@ -188,15 +192,10 @@ class VPRModel(pl.LightningModule):
         
         for i, (val_set_name, val_dataset) in enumerate(zip(dm.val_set_names, dm.val_datasets)):
             feats = torch.concat(val_step_outputs[i], dim=0)
-            if 'pitts' in val_set_name:
-                # split to ref and queries 
-                num_references = val_dataset.dbStruct.numDb
-                num_queries = len(val_dataset)-num_references
-                ground_truth = val_dataset.getPositives()
-            else:
-                num_references = val_dataset.num_references
-                num_queries = val_dataset.num_queries
-                ground_truth = val_dataset.ground_truth
+            
+            num_references = val_dataset.num_references
+            num_queries = val_dataset.num_queries
+            ground_truth = val_dataset.ground_truth
             
             # split to ref and queries    
             r_list = feats[ : num_references]
@@ -234,9 +233,9 @@ if __name__ == '__main__':
         shuffle_all=False, # shuffle all images or keep shuffling in-city only
         random_sample_from_each_place=True,
         image_size=(320, 320),
-        num_workers=16,
+        num_workers=8,
         show_data_stats=True,
-        val_set_names=['pitts30k_val', 'msls_val'], # pitts30k_val, pitts30k_test, msls_val
+        val_set_names=['pitts30k_val', 'msls_val'], # pitts30k_val, pitts30k_test, msls_val, nordland, sped
     )
     
     # examples of backbones
@@ -249,7 +248,7 @@ if __name__ == '__main__':
         #---- Backbone architecture ----
         backbone_arch='resnet50',
         pretrained=True,
-        layers_to_freeze=1,
+        layers_to_freeze=2,
         layers_to_crop=[], # 4 crops the last resnet layer, 3 crops the 3rd, ...etc
         
         #---------------------
@@ -269,12 +268,12 @@ if __name__ == '__main__':
         #-----------------------------------
         #---- Training hyperparameters -----
         #
-        lr=0.03,
-        optimizer='sgd', # or adamw
-        weight_decay=1e-3,
+        lr=0.0002, # 0.03 for sgd
+        optimizer='adam', # sgd, adam or adamw
+        weight_decay=0, # 0.001 for sgd or 0.0 for adam
         momentum=0.9,
         warmpup_steps=600,
-        milestones=[5, 10, 15],
+        milestones=[5, 10, 15, 25],
         lr_mult=0.3,
         
         #---------------------------------
@@ -292,9 +291,9 @@ if __name__ == '__main__':
     # model params saving using Pytorch Lightning
     # we save the best 3 models accoring to Recall@1 on pittsburg val
     checkpoint_cb = ModelCheckpoint(
-        monitor='msls_val/R1',
+        monitor='pitts30k_val/R1',
         filename=f'{model.encoder_arch}' +
-        '_epoch({epoch:02d})_step({step:04d})_R1[{msls_val/R1:.4f}]_R5[{msls_val/R5:.4f}]',
+        '_epoch({epoch:02d})_step({step:04d})_R1[{pitts30k_val/R1:.4f}]_R5[{pitts30k_val/R5:.4f}]',
         auto_insert_metric_name=False,
         save_weights_only=True,
         save_top_k=3,
@@ -314,7 +313,7 @@ if __name__ == '__main__':
         callbacks=[checkpoint_cb],# we run the checkpointing callback (you can add more)
         reload_dataloaders_every_n_epochs=1, # we reload the dataset to shuffle the order
         log_every_n_steps=20,
-        # fast_dev_run=True # comment if you want to start training the network and saving checkpoints
+        fast_dev_run=True # comment if you want to start training the network and saving checkpoints
     )
 
     # we call the trainer, and give it the model and the datamodule

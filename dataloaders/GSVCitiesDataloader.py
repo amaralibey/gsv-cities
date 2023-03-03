@@ -3,10 +3,10 @@ from torch.utils.data.dataloader import DataLoader
 from torchvision import transforms as T
 
 from dataloaders.train.GSVCitiesDataset import GSVCitiesDataset
-from dataloaders.val import PittsburghDataset
-from dataloaders.val import MapillaryDataset
-from dataloaders.val import NordlandDataset
-from dataloaders.val import SPEDDataset
+from dataloaders.val.PittsburghDataset import PittsburghDataset
+from dataloaders.val.MapillaryDataset import MSLS
+from dataloaders.val.NordlandDataset import NordlandDataset
+from dataloaders.val.SPEDDataset import SPEDDataset
 
 
 from prettytable import PrettyTable
@@ -109,20 +109,17 @@ class GSVCitiesDataModule(pl.LightningDataModule):
             # load validation sets (pitts_val, msls_val, ...etc)
             self.val_datasets = []
             for valid_set_name in self.val_set_names:
-                if valid_set_name.lower() == 'pitts30k_test':
-                    self.val_datasets.append(PittsburghDataset.get_whole_test_set(
-                        input_transform=self.valid_transform))
-                elif valid_set_name.lower() == 'pitts30k_val':
-                    self.val_datasets.append(PittsburghDataset.get_whole_val_set(
+                if 'pitts30k' in valid_set_name.lower():
+                    self.val_datasets.append(PittsburghDataset(which_ds=valid_set_name,
                         input_transform=self.valid_transform))
                 elif valid_set_name.lower() == 'msls_val':
-                    self.val_datasets.append(MapillaryDataset.MSLS(
+                    self.val_datasets.append(MSLS(
                         input_transform=self.valid_transform))
                 elif valid_set_name.lower() == 'nordland':
-                    self.val_datasets.append(NordlandDataset.NordlandDataset(
+                    self.val_datasets.append(NordlandDataset(
                         input_transform=self.valid_transform))
                 elif valid_set_name.lower() == 'sped':
-                    self.val_datasets.append(SPEDDataset.SPEDDataset(
+                    self.val_datasets.append(SPEDDataset(
                         input_transform=self.valid_transform))
                 else:
                     print(
